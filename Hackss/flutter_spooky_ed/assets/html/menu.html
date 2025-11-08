@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <title>Spooky Ed - Menu</title>
+    <style>
+        body {
+          margin: 0;
+          height: 100vh;
+          background: linear-gradient(135deg, #1a0030 0%, #5a0080 50%, #2d0045 100%);
+          background-attachment: fixed;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+
+        .game-icon {
+          position: fixed;
+          width: 140px;
+          height: 140px;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          cursor: pointer;
+          border-radius: 24px;
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0);
+          background: linear-gradient(135deg, #ff6b35, #f7931e);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Creepster', cursive;
+          font-size: 20px;
+          color: #fff;
+          text-shadow: 2px 2px 4px #000;
+        }
+
+        #game1 {
+          top: 60%;
+          left: 25%;
+          transform: translate(-50%, -50%);
+        }
+
+        #game2 {
+          top: 30%;
+          right: 20%;
+          transform: translate(50%, -50%);
+        }
+
+        .game-icon:hover {
+          transform: scale(1.2);
+          box-shadow: 0 0 20px 8px rgba(255, 165, 0, 0.8);
+          z-index: 10;
+        }
+
+        .top-center-text {
+          position: fixed;
+          top: 15px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-family: 'Creepster', cursive, 'Comic Sans MS', cursive, sans-serif;
+          font-size: 60px;
+          color: #00ffd5;
+          text-shadow: 2px 2px 5px #000000a8;
+          z-index: 1000;
+          user-select: none;
+        }
+
+        .account-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1000;
+        }
+
+        .account-icon {
+          width: 64px;
+          height: 64px;
+          background-color: #939393;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+          font-size: 32px;
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: 70px;
+          right: 0;
+          background-color: rgba(255, 255, 255, 0.9);
+          border-radius: 8px;
+          padding: 10px;
+          min-width: 150px;
+          display: none;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-menu.show {
+          display: block;
+        }
+
+        .username {
+          padding: 5px 10px;
+          margin-bottom: 10px;
+          color: #333;
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .logout-link {
+          display: block;
+          padding: 5px 10px;
+          color: #ff4444;
+          text-decoration: none;
+          transition: background-color 0.3s;
+        }
+
+        .logout-link:hover {
+          background-color: rgba(255, 68, 68, 0.1);
+          border-radius: 4px;
+        }
+  </style>
+</head>
+<body>
+<div class="top-center-text">spooky ed</div>
+  
+  <div class="account-container">
+      <div class="account-icon" onclick="toggleDropdown()">
+      👻
+    </div>
+      <div class="dropdown-menu" id="accountDropdown">
+          <div class="username" id="usernameDisplay">Username</div>
+          <a href="home.html" class="logout-link">Logout</a>
+    </div>
+  </div>
+
+  <div id="game1" class="game-icon" onclick="launchGame(1)">
+      🎃<br>Trick or Answer
+  </div>
+  <div id="game2" class="game-icon" onclick="launchGame(2)">
+      🧪<br>Potion Brewing
+  </div>
+
+  <script>
+      function toggleDropdown() {
+        const dropdown = document.getElementById('accountDropdown');
+        dropdown.classList.toggle('show');
+      }
+
+      window.addEventListener('click', function(event) {
+        if (!event.target.closest('.account-container')) {
+          const dropdown = document.getElementById('accountDropdown');
+          if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+          }
+        }
+      });
+
+      window.addEventListener('DOMContentLoaded', function() {
+          const username = localStorage.getItem('spookyEdUsername');
+          if (username) {
+              document.getElementById('usernameDisplay').textContent = username;
+          } else {
+              window.location.href = 'home.html';
+          }
+      });
+
+      document.querySelector('.logout-link').addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('spookyEdUsername');
+          window.location.href = 'home.html';
+      });
+
+      function launchGame(gameNumber) {
+          alert('Game ' + gameNumber + ' will be launched. This can be integrated with your game activities!');
+      }
+  </script>
+</body>
+</html>
