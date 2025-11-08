@@ -62,6 +62,8 @@ class ChatViewModel : ViewModel() {
                 }
                 _downloadProgress.value = null
                 _statusMessage.value = "Download complete! Please load the model."
+                // Refresh the models list to update the isDownloaded status
+                loadAvailableModels()
             } catch (e: Exception) {
                 _statusMessage.value = "Download failed: ${e.message}"
                 _downloadProgress.value = null
