@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -88,7 +94,11 @@ fun SpookyEdScreen(activity: ComponentActivity) {
     var showChatDialog by remember { mutableStateOf(false) }
     var currentPageUrl by remember { mutableStateOf<String?>(null) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
+    ) {
         AndroidView(
             factory = { context ->
                 WebView(context).apply {
@@ -162,7 +172,8 @@ fun SpookyEdScreen(activity: ComponentActivity) {
                 onClick = { showChatDialog = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .navigationBarsPadding(),
                 containerColor = Color(0xFFFF6B35),
                 contentColor = Color.White
             ) {
@@ -183,7 +194,7 @@ fun SpookyEdScreen(activity: ComponentActivity) {
         )
     }
 
-    androidx.activity.compose.BackHandler(enabled = canGoBack) {
+    BackHandler(enabled = canGoBack) {
         webView?.goBack()
     }
 }
@@ -215,212 +226,242 @@ fun AIChatDialog(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.85f),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF2D1B69)
-            )
+    // Fullscreen dialog - no Dialog wrapper, just fill the entire screen
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars),
+        color = Color(0xFF2D1B69)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
+            // Header
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                color = Color(0xFFFF6B35)
             ) {
-                // Header
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFFFF6B35),
-                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Ask AI",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = statusMessage,
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.9f)
-                            )
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (currentModelId != null) {
-                                TextButton(
-                                    onClick = { showModelSelector = !showModelSelector },
-                                    colors = ButtonDefaults.textButtonColors(
-                                        contentColor = Color.White
-                                    )
-                                ) {
-                                    Text("Models", fontSize = 12.sp)
-                                }
-                            }
-                            IconButton(onClick = onDismiss) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Close",
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Download progress
-                downloadProgress?.let { progress ->
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFFF8C42)
-                    )
-                }
-
-                // Model Selector
-                if (showModelSelector) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFF1A0D3E)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Select a Model",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            
-                            if (availableModels.isEmpty()) {
-                                Text(
-                                    text = "Loading models...",
-                                    fontSize = 14.sp,
-                                    color = Color.White.copy(alpha = 0.7f)
-                                )
-                            } else {
-                                LazyColumn(
-                                    modifier = Modifier.heightIn(max = 200.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(availableModels) { model ->
-                                        ModelItemCompact(
-                                            model = model,
-                                            isLoaded = model.id == currentModelId,
-                                            onDownload = { 
-                                                viewModel.downloadModel(model.id)
-                                            },
-                                            onLoad = { 
-                                                viewModel.loadModel(model.id)
-                                                showModelSelector = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Messages List
-                if (!showModelSelector || currentModelId != null) {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        if (messages.isEmpty() && currentModelId != null) {
-                            item {
-                                ChatMessageBubble(
-                                    message = ChatMessage(
-                                        text = "👻 Hello! I'm your Spooky Ed AI assistant. Ask me anything about the games or any doubts you have!",
-                                        isUser = false
-                                    )
-                                )
-                            }
-                        }
-                        items(messages) { message ->
-                            ChatMessageBubble(message)
-                        }
-                        if (isLoading) {
-                            item {
-                                TypingIndicator()
-                            }
-                        }
-                    }
-                }
-
-                // Input Field
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFF1A0D3E),
-                    tonalElevation = 4.dp
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextField(
-                            value = inputText,
-                            onValueChange = { inputText = it },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { 
-                                Text(
-                                    "Type your question...",
-                                    color = Color.Gray
-                                ) 
-                            },
-                            enabled = !isLoading && currentModelId != null,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.White.copy(alpha = 0.9f),
-                                unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
-                                disabledContainerColor = Color.White.copy(alpha = 0.5f),
-                                focusedTextColor = Color(0xFF1A0D3E),
-                                unfocusedTextColor = Color(0xFF1A0D3E)
-                            ),
-                            shape = RoundedCornerShape(24.dp),
-                            maxLines = 3
+                    Column {
+                        Text(
+                            text = "Ask AI",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
-
-                        FloatingActionButton(
-                            onClick = {
-                                if (inputText.isNotBlank()) {
-                                    viewModel.sendMessage(inputText)
-                                    inputText = ""
-                                }
-                            },
-                            modifier = Modifier.size(48.dp),
-                            shape = CircleShape,
-                            containerColor = Color(0xFFFF6B35),
-                            contentColor = Color.White
-                        ) {
+                        Text(
+                            text = statusMessage,
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (currentModelId != null) {
+                            TextButton(
+                                onClick = { showModelSelector = !showModelSelector },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("Models", fontSize = 12.sp)
+                            }
+                        }
+                        IconButton(onClick = onDismiss) {
                             Icon(
-                                imageVector = Icons.Default.Send,
-                                contentDescription = "Send"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = Color.White
                             )
                         }
                     }
                 }
             }
+
+            // Download progress
+            downloadProgress?.let { progress ->
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFFFF8C42)
+                )
+            }
+
+            // Model Selector
+            if (showModelSelector) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFF1A0D3E)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Select a Model",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            TextButton(
+                                onClick = { viewModel.refreshModels() }
+                            ) {
+                                Text(
+                                    "🔄 Refresh",
+                                    color = Color(0xFFFF8C42),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                        
+                        if (availableModels.isEmpty()) {
+                            Text(
+                                text = "Loading models...",
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        } else {
+                            // Show count of downloaded models
+                            val downloadedCount = availableModels.count { it.isDownloaded }
+                            if (downloadedCount > 0) {
+                                Text(
+                                    text = "✓ $downloadedCount model(s) downloaded",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFFF8C42),
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+
+                            LazyColumn(
+                                modifier = Modifier.heightIn(max = 200.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(availableModels) { model ->
+                                    ModelItemCompact(
+                                        model = model,
+                                        isLoaded = model.id == currentModelId,
+                                        onDownload = { 
+                                            viewModel.downloadModel(model.id)
+                                        },
+                                        onLoad = { 
+                                            viewModel.loadModel(model.id)
+                                            showModelSelector = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Messages List
+            if (!showModelSelector || currentModelId != null) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (messages.isEmpty() && currentModelId != null) {
+                        item {
+                            ChatMessageBubble(
+                                message = ChatMessage(
+                                    text = "👻 Hello! I'm your Spooky Ed AI assistant. Ask me anything about the games or any doubts you have!",
+                                    isUser = false
+                                )
+                            )
+                        }
+                    }
+                    items(messages) { message ->
+                        ChatMessageBubble(message)
+                    }
+                    if (isLoading) {
+                        item {
+                            TypingIndicator()
+                        }
+                    }
+                }
+            }
+
+            // Input Field
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                color = Color(0xFF1A0D3E),
+                tonalElevation = 4.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextField(
+                        value = inputText,
+                        onValueChange = { inputText = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { 
+                            Text(
+                                "Type your question...",
+                                color = Color.Gray
+                            ) 
+                        },
+                        enabled = !isLoading && currentModelId != null,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White.copy(alpha = 0.9f),
+                            unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                            disabledContainerColor = Color.White.copy(alpha = 0.5f),
+                            focusedTextColor = Color(0xFF1A0D3E),
+                            unfocusedTextColor = Color(0xFF1A0D3E)
+                        ),
+                        shape = RoundedCornerShape(24.dp),
+                        maxLines = 3
+                    )
+
+                    FloatingActionButton(
+                        onClick = {
+                            if (inputText.isNotBlank()) {
+                                viewModel.sendMessage(inputText)
+                                inputText = ""
+                            }
+                        },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        containerColor = Color(0xFFFF6B35),
+                        contentColor = Color.White
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Send"
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    // Handle back button to close dialog
+    BackHandler {
+        onDismiss()
     }
 }
 
@@ -431,7 +472,7 @@ fun ChatMessageBubble(message: ChatMessage) {
         horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
     ) {
         Card(
-            modifier = Modifier.widthIn(max = 280.dp),
+            modifier = Modifier.widthIn(max = 320.dp),
             shape = RoundedCornerShape(
                 topStart = 16.dp,
                 topEnd = 16.dp,
@@ -446,10 +487,11 @@ fun ChatMessageBubble(message: ChatMessage) {
             )
         ) {
             Text(
-                text = message.text,
+                text = formatMathematicalText(message.text),
                 modifier = Modifier.padding(12.dp),
                 color = if (message.isUser) Color.White else Color(0xFF1A0D3E),
-                fontSize = 14.sp
+                fontSize = 15.sp,
+                lineHeight = 20.sp
             )
         }
     }
@@ -554,4 +596,127 @@ fun ModelItemCompact(
             }
         }
     }
+}
+
+// Helper function to format mathematical text with proper symbols
+fun formatMathematicalText(text: String): String {
+    var result = text
+
+    // LaTeX-style Greek letters (case-sensitive, with backslash)
+    result = result
+        .replace("\\alpha", "α")
+        .replace("\\beta", "β")
+        .replace("\\gamma", "γ")
+        .replace("\\delta", "δ")
+        .replace("\\epsilon", "ε")
+        .replace("\\theta", "θ")
+        .replace("\\lambda", "λ")
+        .replace("\\mu", "μ")
+        .replace("\\pi", "π")
+        .replace("\\sigma", "σ")
+        .replace("\\phi", "φ")
+        .replace("\\omega", "ω")
+        .replace("\\Delta", "Δ")
+        .replace("\\Sigma", "Σ")
+        .replace("\\Omega", "Ω")
+        .replace("\\Pi", "Π")
+        .replace("\\Theta", "Θ")
+        .replace("\\Lambda", "Λ")
+        .replace("\\Phi", "Φ")
+        .replace("\\Gamma", "Γ")
+
+    // Mathematical operators
+    result = result
+        .replace("\\int", "∫")
+        .replace("\\sum", "∑")
+        .replace("\\prod", "∏")
+        .replace("\\sqrt", "√")
+        .replace("\\infty", "∞")
+        .replace("\\infinity", "∞")
+        .replace("\\partial", "∂")
+        .replace("\\nabla", "∇")
+        .replace("\\therefore", "∴")
+        .replace("\\because", "∵")
+
+    // Relations and comparisons
+    result = result
+        .replace("\\leq", "≤")
+        .replace("\\le", "≤")
+        .replace("\\geq", "≥")
+        .replace("\\ge", "≥")
+        .replace("\\neq", "≠")
+        .replace("\\ne", "≠")
+        .replace("\\approx", "≈")
+        .replace("\\equiv", "≡")
+        .replace("\\sim", "∼")
+        .replace("\\propto", "∝")
+
+    // Set theory
+    result = result
+        .replace("\\in", "∈")
+        .replace("\\notin", "∉")
+        .replace("\\subset", "⊂")
+        .replace("\\supset", "⊃")
+        .replace("\\subseteq", "⊆")
+        .replace("\\supseteq", "⊇")
+        .replace("\\cup", "∪")
+        .replace("\\cap", "∩")
+        .replace("\\emptyset", "∅")
+        .replace("\\forall", "∀")
+        .replace("\\exists", "∃")
+
+    // Arrows
+    result = result
+        .replace("\\rightarrow", "→")
+        .replace("\\leftarrow", "←")
+        .replace("\\leftrightarrow", "↔")
+        .replace("\\Rightarrow", "⇒")
+        .replace("\\Leftarrow", "⇐")
+        .replace("\\Leftrightarrow", "⇔")
+        .replace("\\uparrow", "↑")
+        .replace("\\downarrow", "↓")
+
+    // Basic operators and symbols
+    result = result
+        .replace("\\cdot", "·")
+        .replace("\\times", "×")
+        .replace("\\div", "÷")
+        .replace("\\pm", "±")
+        .replace("\\mp", "∓")
+        .replace("\\degree", "°")
+        .replace("\\circ", "∘")
+
+    // Fractions and powers (common patterns)
+    result = result
+        .replace("\\frac", "")  // Remove \frac as we can't render it properly
+        .replace("^2", "²")
+        .replace("^3", "³")
+        .replace("^1", "¹")
+        .replace("_0", "₀")
+        .replace("_1", "₁")
+        .replace("_2", "₂")
+        .replace("_3", "₃")
+
+    // Common plain text replacements (with word boundaries using regex)
+    result = result
+        .replace(Regex("\\b(pi|PI)\\b"), "π")
+        .replace(Regex("\\b(infinity|Infinity|INFINITY)\\b"), "∞")
+        .replace(Regex("\\b(theta|Theta)\\b"), "θ")
+        .replace(Regex("\\b(alpha|Alpha)\\b"), "α")
+        .replace(Regex("\\b(beta|Beta)\\b"), "β")
+        .replace(Regex("\\b(gamma|Gamma)\\b"), "γ")
+        .replace(Regex("\\b(delta|Delta)\\b"), "δ")
+        .replace(Regex("\\b(sigma|Sigma)\\b"), "σ")
+        .replace(Regex("\\b(omega|Omega)\\b"), "ω")
+        .replace(Regex("\\b(lambda|Lambda)\\b"), "λ")
+
+    // Comparison operators (plain text)
+    result = result
+        .replace(" <= ", " ≤ ")
+        .replace(" >= ", " ≥ ")
+        .replace(" != ", " ≠ ")
+        .replace(" << ", " ≪ ")
+        .replace(" >> ", " ≫ ")
+
+    return result
 }
