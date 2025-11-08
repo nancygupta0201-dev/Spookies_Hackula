@@ -19,6 +19,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    androidResources {
+        noCompress += listOf("png", "jpg", "jpeg", "gif")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false

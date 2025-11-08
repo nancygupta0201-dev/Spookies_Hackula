@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <title>Spooky Ed - Menu</title>
+    <style>
+        .background-image {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          z-index: -2;
+        }
+
+        body {
+          margin: 0;
+          height: 100vh;
+          background-color: #1a0030;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+
+        body::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, rgba(26, 0, 48, 0.3) 0%, rgba(90, 0, 128, 0.3) 50%, rgba(45, 0, 69, 0.3) 100%);
+          pointer-events: none;
+          z-index: -1;
+        }
+
+        .game-icon, .top-center-text, .account-container {
+          position: relative;
+          z-index: 1;
+        }
+
+        .game-icon {
+          position: fixed;
+          width: 95px;
+          height: 60px;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          cursor: pointer;
+          border-radius: 24px;
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+          overflow: hidden;
+        }
+
+        .game-icon img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 24px;
+        }
+
+        #game1 {
+          top: 74.3%;
+          left: 24.85%;
+          transform: translate(-50%, -50%);
+        }
+
+        #game2 {
+          top: 30%;
+          right: 24.9%;
+          transform: translate(50%, -50%);
+        }
+
+        .game-icon:hover {
+          transform: scale(1.2);
+          box-shadow: 0 0 20px 8px rgba(255, 165, 0, 0.8);
+          z-index: 10;
+        }
+
+        .game-label {
+          position: fixed;
+          font-family: 'Creepster', cursive, 'Comic Sans MS', cursive, sans-serif;
+          font-size: 24px;
+          color: #ffd600;
+          text-shadow: 2px 2px 4px #000000;
+          text-align: center;
+          z-index: 1;
+          pointer-events: none;
+        }
+
+        #label1 {
+          top: 85%;
+          left: 24.85%;
+          transform: translateX(-50%);
+        }
+
+        #label2 {
+          top: 41%;
+          right: 24.9%;
+          transform: translateX(50%);
+        }
+
+        .top-center-text {
+          position: fixed;
+          top: 15px;
+          left: 15%;
+          transform: translateX(-50%);
+          font-family: 'Creepster', cursive, 'Comic Sans MS', cursive, sans-serif;
+          font-size: 60px;
+          color: #00ffd5;
+          text-shadow: 2px 2px 5px #000000a8;
+          z-index: 1000;
+          user-select: none;
+        }
+
+        .account-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1000;
+        }
+
+        .account-icon {
+          width: 48px;
+          height: 48px;
+          background-color: #939393;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+          font-size: 24px;
+          overflow: hidden;
+        }
+
+        .account-icon img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: 70px;
+          right: 0;
+          background-color: rgba(255, 255, 255, 0.9);
+          border-radius: 8px;
+          padding: 10px;
+          min-width: 150px;
+          display: none;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-menu.show {
+          display: block;
+        }
+
+        .username {
+          padding: 5px 10px;
+          margin-bottom: 10px;
+          color: #333;
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .logout-link {
+          display: block;
+          padding: 5px 10px;
+          color: #ff4444;
+          text-decoration: none;
+          transition: background-color 0.3s;
+        }
+
+        .logout-link:hover {
+          background-color: rgba(255, 68, 68, 0.1);
+          border-radius: 4px;
+        }
+  </style>
+</head>
+<body>
+<img src="images/menu page.jpg" class="background-image" alt="">
+<div class="top-center-text">spooky ed</div>
+  
+  <div class="account-container">
+      <div class="account-icon" onclick="toggleDropdown()">
+          <img src="images/ghost.png" alt="Account">
+    </div>
+      <div class="dropdown-menu" id="accountDropdown">
+          <div class="username" id="usernameDisplay">Username</div>
+          <a href="home.html" class="logout-link">Logout</a>
+    </div>
+  </div>
+
+  <div id="game1" class="game-icon" onclick="launchGame(1)">
+      <img src="images/game icon 1.jpg" alt="Trick or Answer">
+  </div>
+<div id="label1" class="game-label">Trick or Answer</div>
+  <div id="game2" class="game-icon" onclick="launchGame(2)">
+      <img src="images/game icon 2.jpg" alt="Potion Brewing">
+  </div>
+<div id="label2" class="game-label">Potion Brewing</div>
+
+  <script>
+      function toggleDropdown() {
+        const dropdown = document.getElementById('accountDropdown');
+        dropdown.classList.toggle('show');
+      }
+
+      window.addEventListener('click', function(event) {
+        if (!event.target.closest('.account-container')) {
+          const dropdown = document.getElementById('accountDropdown');
+          if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+          }
+        }
+      });
+
+      window.addEventListener('DOMContentLoaded', function() {
+          const username = localStorage.getItem('spookyEdUsername');
+          if (username) {
+              document.getElementById('usernameDisplay').textContent = username;
+          } else {
+              window.location.href = 'home.html';
+          }
+      });
+
+      document.querySelector('.logout-link').addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('spookyEdUsername');
+          window.location.href = 'home.html';
+      });
+
+      function launchGame(gameNumber) {
+          if (typeof GameLauncher !== 'undefined') {
+              // Call the Android interface to launch the game
+              GameLauncher.launchGame(gameNumber);
+              console.log('Launching game ' + gameNumber);
+          } else {
+              // Fallback if interface is not available (e.g., testing in browser)
+              alert('Game ' + gameNumber + ' launch requested.');
+              console.log('GameLauncher interface not available. Are you running in Android WebView?');
+          }
+      }
+  </script>
+</body>
+</html>
