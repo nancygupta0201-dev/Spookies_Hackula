@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 class SpookyEdActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             Startup_hackathon20Theme {
                 SpookyEdScreen(this)

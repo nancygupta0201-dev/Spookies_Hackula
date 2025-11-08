@@ -47,7 +47,7 @@ class MyApplication : Application() {
     }
 
     private suspend fun registerModels() {
-        // Medium-sized model - better quality (374 MB)
+        // Original model - already downloaded
         addModelFromURL(
             url = "https://huggingface.co/Triangle104/Qwen2.5-0.5B-Instruct-Q6_K-GGUF/resolve/main/qwen2.5-0.5b-instruct-q6_k.gguf",
             name = "Qwen 2.5 0.5B Instruct Q6_K",
